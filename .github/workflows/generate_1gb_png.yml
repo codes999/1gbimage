@@ -1,4 +1,4 @@
-name: Generate 1GB PNG
+name: Generate ~100MB PNG
 
 on:
   workflow_dispatch:
@@ -27,21 +27,25 @@ jobs:
           python -m pip install --upgrade pip
           pip install pillow numpy
 
-      - name: Generate ~1GB PNG
+      - name: Generate ~95MB PNG (noise, low compression)
         run: |
           python <<'EOF'
           import numpy as np
           from PIL import Image
 
-          size = 16384
+          # ~92MB: 4800 x 4800 x 4 bytes
+          size = 4800
           data = (np.random.rand(size, size, 4) * 255).astype('uint8')
-          Image.fromarray(data, 'RGBA').save("large_test.png", optimize=False, compress_level=0)
+
+          img = Image.fromarray(data, 'RGBA')
+          img.save("large_approx_100mb.png", optimize=False, compress_level=0)
           EOF
 
       - name: Commit and push
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add large_test.png
-          git commit -m "Add ~1GB PNG test file" || echo "No changes"
+
+          git add large_approx_100mb.png
+          git commit -m "Add ~100MB PNG test file"
           git push
